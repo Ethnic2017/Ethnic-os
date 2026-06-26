@@ -9,18 +9,16 @@ import { ArrowRight, Ticket, ShoppingBag, X, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PublicFooter from '../components/public/PublicFooter';
 
-// ─── Ethnic logo SVG (diamond motif) ─────────────────────────────────────────
+// ─── Ethnic logo (real brand mark) ───────────────────────────────────────────
 function EthnicLogoSVG({ size = 40 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="50" y="4" width="64" height="64" transform="rotate(45 50 50)" stroke="#C9A96E" strokeWidth="2" fill="none"/>
-      <rect x="50" y="18" width="45" height="45" transform="rotate(45 50 50)" stroke="#C9A96E" strokeWidth="1" fill="none"/>
-      <rect x="50" y="34" width="23" height="23" transform="rotate(45 50 50)" fill="#C9A96E"/>
-      <circle cx="50" cy="15" r="3" fill="#B34233"/>
-      <circle cx="85" cy="50" r="3" fill="#B34233"/>
-      <circle cx="50" cy="85" r="3" fill="#B34233"/>
-      <circle cx="15" cy="50" r="3" fill="#B34233"/>
-    </svg>
+    <img
+      src="/logo.png"
+      alt="Ethnic Community"
+      width={size}
+      height={size}
+      style={{ width: size, height: size, objectFit: 'contain' }}
+    />
   );
 }
 

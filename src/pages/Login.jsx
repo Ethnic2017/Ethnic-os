@@ -50,9 +50,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rotate-45 border-2 border-[#C9A96E] mb-6">
-            <span className="text-[#C9A96E] font-bold text-xl -rotate-45">E</span>
-          </div>
+          <img
+            src="/logo.png"
+            alt="Ethnic Community"
+            className="w-20 h-20 mx-auto mb-6 object-contain"
+          />
           <h1 className="text-white text-2xl font-light tracking-widest uppercase">Ethnic OS</h1>
           <p className="text-[#8A8A8A] text-sm mt-2 tracking-wide">Plateforme de gestion</p>
         </div>
