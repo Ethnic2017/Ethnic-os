@@ -59,3 +59,9 @@ ethnic-os-extracted/
 # ⚠️ Données clients (ne JAMAIS commit — contient 3441 emails/téléphones)
 scripts/sql_chunks/
 *.csv
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
