@@ -27,25 +27,33 @@ const pageVariants = {
   exit: { opacity: 0, x: -16, transition: { duration: 0.12, ease: 'easeIn' } },
 };
 
+// Routes accessibles sans connexion
+const PUBLIC_PATHS = ['/login', '/auth/callback'];
+const isPublicRoute = (pathname) =>
+  PUBLIC_PATHS.includes(pathname) ||
+  pathname.toLowerCase().startsWith('/public') ||
+  pathname === '/JoinCommunity';
+
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner while checking app public settings or auth
+  // Spinner pendant la vérification de session
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex items-center justify-center bg-[#0A0A0A]">
+        <div className="w-8 h-8 border-4 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
-    // auth_required: app is public, just render without login
+  if (authError?.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
+  }
+
+  // Redirection vers login si non authentifié sur une route privée
+  if (!isAuthenticated && !isPublicRoute(location.pathname)) {
+    return <Navigate to={`/login?from=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   // Render the main app
