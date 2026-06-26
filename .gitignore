@@ -1,0 +1,61 @@
+# Variables d'environnement (ne JAMAIS commit — contient les clés Supabase)
+.env
+.env.*
+.env.local
+
+# Dépendances
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-ssr/
+build/
+*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Claude Code (config locale, contient les tokens)
+.claude/settings.local.json
+
+# Cache
+.eslintcache
+.cache/
+.parcel-cache/
+
+# Tests
+coverage/
+
+# Système
+Thumbs.db
+
+# Archives
+*.zip
+*.tar.gz
+
+# Dossiers de source originale Base44 (pas besoin de les commit)
+ethnic-os/
+ethnic-os-extracted/
+
+# ⚠️ Données clients (ne JAMAIS commit — contient 3441 emails/téléphones)
+scripts/sql_chunks/
+*.csv

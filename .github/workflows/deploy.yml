@@ -1,0 +1,51 @@
+name: Build & Deploy to OVH
+
+on:
+  # Déclenchement automatique à chaque push sur main
+  push:
+    branches: [main]
+  # Déclenchement manuel depuis l'interface GitHub
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupère le code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Installe Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. Installe les dépendances
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      # 4. Build le projet (avec les variables Supabase injectées au build)
+      - name: Build production bundle
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      # 5. Déploie via FTP sécurisé (FTPS) sur OVH
+      # IMPORTANT : déploie dans /www/ethnic-os-v2/ pour NE PAS écraser la prod
+      # Une fois validé, on changera server-dir vers /www/ pour passer en prod
+      - name: Deploy to OVH via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.cluster129.hosting.ovh.net
+          username: ethnicb
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          server-dir: /www/ethnic-os-v2/
+          dangerous-clean-slate: false
+          log-level: standard
