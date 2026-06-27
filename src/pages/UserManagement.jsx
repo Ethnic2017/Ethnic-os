@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import TopBar from '../components/admin/TopBar';
 import {
   Users, Search, Plus, Shield, Edit2, Check, X, Mail,
-  UserCheck, UserX, RefreshCw, Link2
+  UserCheck, UserX, RefreshCw, Link2, Copy
 } from 'lucide-react';
 
 const ACCESS_LEVELS = ['no_access', 'read_only', 'editor', 'manager'];
@@ -225,6 +226,8 @@ export default function UserManagement() {
   const [newUserName, setNewUserName] = useState('');
   const [newAccountType, setNewAccountType] = useState('team_member');
   const [inviteStatus, setInviteStatus] = useState(''); // 'sending' | 'sent' | 'error'
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteError, setInviteError] = useState('');
 
   const { data: permissions = [] } = useQuery({
     queryKey: ['module-permissions'],
@@ -255,44 +258,33 @@ export default function UserManagement() {
   const handleInviteUser = async () => {
     if (!newUserEmail) return;
     setInviteStatus('sending');
-
-    // Determine base44 role: admin account_type → 'admin', otherwise 'user'
-    const b44Role = newAccountType === 'admin' ? 'admin' : 'user';
+    setInviteError('');
+    setInviteLink('');
 
     try {
-      // Invite the user into the app
-      await base44.users.inviteUser(newUserEmail, b44Role);
-
-      // Create (or update) their permissions record
-      const existing = permissions.find(p => p.user_email === newUserEmail);
-      const existingContact = crmContacts.find(c => c.email === newUserEmail);
-
-      if (existing) {
-        await saveMutation.mutateAsync({
-          id: existing.id,
-          data: { ...existing, account_type: newAccountType, status: 'active', user_name: newUserName || existing.user_name }
-        });
-      } else {
-        await createMutation.mutateAsync({
-          user_email: newUserEmail,
-          user_name: newUserName,
-          account_type: newAccountType,
-          status: 'active',
-          linked_contact_id: existingContact?.id || null,
-        });
+      // Secure account creation + CRM linking happens server-side (service-role).
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: {
+          action: 'grant_access',
+          email: newUserEmail.trim().toLowerCase(),
+          name: newUserName || null,
+          role: newAccountType,
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error || !data?.ok) {
+        throw new Error(data?.error || error?.message || 'Échec de la création du compte');
       }
 
+      setInviteLink(data.action_link || '');
       setInviteStatus('sent');
-      setTimeout(() => {
-        setInviteStatus('');
-        setShowAddForm(false);
-        setNewUserEmail('');
-        setNewUserName('');
-        setNewAccountType('team_member');
-      }, 2000);
+      setNewUserEmail('');
+      setNewUserName('');
+      queryClient.invalidateQueries({ queryKey: ['module-permissions'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-people'] });
     } catch (e) {
+      setInviteError(e.message || 'Erreur inconnue');
       setInviteStatus('error');
-      setTimeout(() => setInviteStatus(''), 3000);
     }
   };
 
@@ -411,20 +403,38 @@ export default function UserManagement() {
               className="flex items-center gap-2 px-5 py-2 bg-[#C9A96E] text-[#0A0A0A] text-xs font-semibold rounded-lg hover:bg-[#E0CBA8] transition-all disabled:opacity-50"
             >
               {inviteStatus === 'sending' ? (
-                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Envoi...</>
-              ) : inviteStatus === 'sent' ? (
-                <><Check className="w-3.5 h-3.5" /> Invitation envoyée !</>
+                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Création...</>
               ) : (
-                <><Mail className="w-3.5 h-3.5" /> Envoyer l'invitation</>
+                <><Mail className="w-3.5 h-3.5" /> Créer le compte &amp; générer le lien</>
               )}
             </button>
-            <button onClick={() => setShowAddForm(false)} className="px-4 py-2 border border-white/10 text-[#8A8A8A] text-xs rounded-lg hover:text-[#F5F0EB]">
+            <button onClick={() => { setShowAddForm(false); setInviteStatus(''); setInviteLink(''); setInviteError(''); }} className="px-4 py-2 border border-white/10 text-[#8A8A8A] text-xs rounded-lg hover:text-[#F5F0EB]">
               Annuler
             </button>
             {inviteStatus === 'error' && (
-              <p className="text-xs text-red-400">Erreur lors de l'invitation.</p>
+              <p className="text-xs text-red-400">{inviteError}</p>
             )}
           </div>
+          {inviteStatus === 'sent' && (
+            <div className="mt-4 p-3 bg-green-400/5 border border-green-400/20 rounded-lg">
+              <p className="text-xs text-green-400 mb-2 flex items-center gap-2">
+                <Check className="w-3.5 h-3.5" /> Compte créé et relié à la fiche CRM.
+              </p>
+              {inviteLink ? (
+                <>
+                  <p className="text-[11px] text-[#8A8A8A] mb-1">Lien magique d'activation — envoie-le à la personne :</p>
+                  <div className="flex gap-2">
+                    <input readOnly value={inviteLink} onFocus={e => e.target.select()} className="flex-1 bg-[#1A1A1A] border border-white/10 text-[#8A8A8A] text-[11px] rounded px-2 py-1.5" />
+                    <button onClick={() => navigator.clipboard?.writeText(inviteLink)} className="flex items-center gap-1 px-3 py-1.5 bg-[#C9A96E] text-[#0A0A0A] text-[11px] font-semibold rounded hover:bg-[#E0CBA8]">
+                      <Copy className="w-3 h-3" /> Copier
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-[11px] text-[#8A8A8A]">Lien magique généré.</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
