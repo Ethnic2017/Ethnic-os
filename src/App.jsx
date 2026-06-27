@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { Navigate, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -58,6 +59,13 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <Suspense
+      fallback={
+        <div className="fixed inset-0 flex items-center justify-center bg-[#0A0A0A]">
+          <div className="w-8 h-8 border-4 border-[#C9A96E]/30 border-t-[#C9A96E] rounded-full animate-spin"></div>
+        </div>
+      }
+    >
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Navigate to="/Dashboard" replace />} />
@@ -81,6 +89,7 @@ const AuthenticatedApp = () => {
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </AnimatePresence>
+    </Suspense>
   );
 };
 

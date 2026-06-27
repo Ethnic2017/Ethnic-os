@@ -1,83 +1,46 @@
 /**
  * pages.config.js - Page routing configuration
- * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
- * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
  *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
+ * Pages are lazy-loaded via React.lazy() so each page becomes its own chunk,
+ * downloaded on demand. This keeps the initial bundle small (public visitors
+ * don't download the back-office code, and vice-versa).
  *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
+ * THE ONLY EDITABLE VALUE: mainPage — controls the landing page.
+ * Rendering these pages requires a <Suspense> boundary (see App.jsx).
  */
-import CRM from './pages/CRM';
-import Community from './pages/Community';
-import Contacts from './pages/Contacts';
-import Content from './pages/Content';
-import Dashboard from './pages/Dashboard';
-import EventDetail from './pages/EventDetail';
-import Events from './pages/Events';
-import FixTags from './pages/FixTags';
-import GlobalSearch from './pages/GlobalSearch';
-import ImportAudience from './pages/ImportAudience';
-import JoinCommunity from './pages/JoinCommunity';
-import MediaLibrary from './pages/MediaLibrary';
-import MyAccount from './pages/MyAccount';
-import MyOrders from './pages/MyOrders';
-import Orders from './pages/Orders';
-import PersonDetail from './pages/PersonDetail';
-import PostLogin from './pages/PostLogin';
-import Products from './pages/Products';
-import ProjectDetail from './pages/ProjectDetail';
-import Projects from './pages/Projects';
-import PublicAbout from './pages/PublicAbout';
-import PublicContact from './pages/PublicContact';
-import PublicEvents from './pages/PublicEvents';
-import PublicGallery from './pages/PublicGallery';
-import PublicHome from './pages/PublicHome';
-import PublicSouq from './pages/PublicSouq';
-import PublicWatch from './pages/PublicWatch';
-import Ticketing from './pages/Ticketing';
-import UserManagement from './pages/UserManagement';
-import WebsiteManager from './pages/WebsiteManager';
+import { lazy } from 'react';
 import __Layout from './Layout.jsx';
+
+const CRM = lazy(() => import('./pages/CRM'));
+const Community = lazy(() => import('./pages/Community'));
+const Contacts = lazy(() => import('./pages/Contacts'));
+const Content = lazy(() => import('./pages/Content'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const EventDetail = lazy(() => import('./pages/EventDetail'));
+const Events = lazy(() => import('./pages/Events'));
+const FixTags = lazy(() => import('./pages/FixTags'));
+const GlobalSearch = lazy(() => import('./pages/GlobalSearch'));
+const ImportAudience = lazy(() => import('./pages/ImportAudience'));
+const JoinCommunity = lazy(() => import('./pages/JoinCommunity'));
+const MediaLibrary = lazy(() => import('./pages/MediaLibrary'));
+const MyAccount = lazy(() => import('./pages/MyAccount'));
+const MyOrders = lazy(() => import('./pages/MyOrders'));
+const Orders = lazy(() => import('./pages/Orders'));
+const PersonDetail = lazy(() => import('./pages/PersonDetail'));
+const PostLogin = lazy(() => import('./pages/PostLogin'));
+const Products = lazy(() => import('./pages/Products'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const Projects = lazy(() => import('./pages/Projects'));
+const PublicAbout = lazy(() => import('./pages/PublicAbout'));
+const PublicContact = lazy(() => import('./pages/PublicContact'));
+const PublicEvents = lazy(() => import('./pages/PublicEvents'));
+const PublicGallery = lazy(() => import('./pages/PublicGallery'));
+const PublicHome = lazy(() => import('./pages/PublicHome'));
+const PublicSouq = lazy(() => import('./pages/PublicSouq'));
+const PublicWatch = lazy(() => import('./pages/PublicWatch'));
+const Ticketing = lazy(() => import('./pages/Ticketing'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const WebsiteManager = lazy(() => import('./pages/WebsiteManager'));
 
 
 export const PAGES = {
