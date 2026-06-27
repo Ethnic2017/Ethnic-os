@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,7 +12,17 @@ export default function Login() {
   const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isAuthenticated } = useAuth();
   const from = searchParams.get('from') || '/Dashboard';
+  const target = from.startsWith('http') ? '/Dashboard' : from;
+
+  // Navigate once the session is actually established (avoids the race where
+  // we'd redirect before AuthContext flips isAuthenticated → bounced to login).
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(target, { replace: true });
+    }
+  }, [isAuthenticated, target, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,9 +34,8 @@ export default function Login() {
     if (authError) {
       setError(authError.message);
       setLoading(false);
-    } else {
-      navigate(from.startsWith('http') ? '/Dashboard' : from, { replace: true });
     }
+    // On success: AuthContext sets isAuthenticated → the effect above navigates.
   };
 
   const handleReset = async (e) => {

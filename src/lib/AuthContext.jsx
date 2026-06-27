@@ -11,30 +11,36 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState({ id: 'ethnic-os' });
 
+  // Apply a session: flip auth state IMMEDIATELY (closes the first-login race),
+  // then enrich the user with their role fetched from module_permissions.
+  const applySession = async (session) => {
+    if (session?.user) {
+      const su = session.user;
+      // Minimal user right away so guards pass and the UI can render
+      setUser(prev => prev || {
+        id: su.id,
+        email: su.email,
+        full_name: su.user_metadata?.full_name || su.email,
+        role: 'user',
+      });
+      setIsAuthenticated(true);
+      const u = await buildUser(su);
+      setUser(u);
+    } else {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  };
+
   useEffect(() => {
     // Check current session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        buildUser(session.user).then(u => {
-          setUser(u);
-          setIsAuthenticated(true);
-        }).finally(() => setIsLoadingAuth(false));
-      } else {
-        setIsLoadingAuth(false);
-      }
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => applySession(session))
+      .finally(() => setIsLoadingAuth(false));
 
-    // Listen for auth state changes (login, logout, token refresh)
+    // React to login / logout / token refresh
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        buildUser(session.user).then(u => {
-          setUser(u);
-          setIsAuthenticated(true);
-        });
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+      applySession(session);
     });
 
     return () => subscription.unsubscribe();
